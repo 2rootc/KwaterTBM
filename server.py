@@ -71,6 +71,9 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        if parsed.path == '/healthz':
+            self.handle_health_check()
+            return
         if parsed.path == '/api/meetings':
             self.handle_list_meetings()
             return
@@ -239,6 +242,14 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header('Content-Length', str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+
+    def handle_health_check(self):
+        body = json.dumps({'ok': True, 'service': 'tbm-app'}, ensure_ascii=False).encode('utf-8')
+        self.send_response(HTTPStatus.OK)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
 
 def main() -> int:

@@ -16,10 +16,16 @@ FONT_CANDIDATES = [
     Path(r'C:\Windows\Fonts\malgun.ttf'),
     Path(r'C:\Windows\Fonts\gulim.ttc'),
     Path(r'C:\Windows\Fonts\batang.ttc'),
+    Path('/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'),
+    Path('/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc'),
+    Path('/usr/share/fonts/truetype/nanum/NanumGothic.ttf'),
 ]
 BOLD_FONT_CANDIDATES = [
     Path(r'C:\Windows\Fonts\malgunbd.ttf'),
     Path(r'C:\Windows\Fonts\malgunsl.ttf'),
+    Path('/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc'),
+    Path('/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc'),
+    Path('/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf'),
     *FONT_CANDIDATES,
 ]
 TEXT_RENDER_SCALE = 3
@@ -67,11 +73,15 @@ WORK_LOCATION_RECT = fitz.Rect(58, 299, 304, 317)
 
 
 def load_font(size: int, *, bold: bool = False) -> ImageFont.FreeTypeFont:
+    custom_font = __import__('os').environ.get('TBM_FONT_PATH')
+    if custom_font and Path(custom_font).exists():
+        return ImageFont.truetype(custom_font, size=size)
+
     candidates = BOLD_FONT_CANDIDATES if bold else FONT_CANDIDATES
     for path in candidates:
         if path.exists():
             return ImageFont.truetype(str(path), size=size)
-    raise FileNotFoundError('No usable Korean font found in C:\\Windows\\Fonts')
+    raise FileNotFoundError('No usable Korean font found. Set TBM_FONT_PATH or install a Korean-capable font.')
 
 
 def make_text_png(text: str, font_size: int, *, bold: bool = False, multiline: bool = False, width: int | None = None, align: str = 'left') -> bytes:

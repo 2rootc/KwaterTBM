@@ -1,0 +1,14 @@
+.git
+.gstack
+__pycache__
+*.pyc
+.server.pid
+tmp-server*.log
+tmp-server*.err.log
+storage/logs/*
+storage/pdfs/*
+storage/tmp/*
+!storage/logs/.gitkeep
+!storage/pdfs/.gitkeep
+!storage/tmp/.gitkeep
+SESSION_HANDOFF_*.md

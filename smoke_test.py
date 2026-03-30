@@ -52,6 +52,11 @@ def wait_for_server(port: int, timeout_seconds: float = 10.0) -> None:
 
 
 def run_http_checks(port: int) -> None:
+    with urllib.request.urlopen(f"http://127.0.0.1:{port}/healthz", timeout=3) as response:
+        assert_true(response.status == 200, f"expected GET /healthz to return 200, got {response.status}")
+        body = json.loads(response.read().decode("utf-8"))
+        assert_true(body.get("ok") is True, "expected health payload to include ok=true")
+
     with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/meetings", timeout=3) as response:
         assert_true(response.status == 200, f"expected GET /api/meetings to return 200, got {response.status}")
         body = json.loads(response.read().decode("utf-8"))

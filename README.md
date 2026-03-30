@@ -7,13 +7,6 @@ cd app
 python server.py
 ```
 
-윈도우에서 실행창이 바로 닫히는 경우:
-```bat
-app\run_server.bat
-```
-또는 `app\\run_server.bat`를 더블클릭하세요.
-에러가 있으면 창이 유지되어 원인을 볼 수 있습니다.
-
 브라우저에서 `http://localhost:4173` 접속.
 
 ## Verify Before Ship
@@ -30,14 +23,32 @@ python smoke_test.py
 - `GET /`
 - `GET /api/meetings`
 
-## Ship Readiness
-`gstack /ship`를 쓰려면 현재 앱 디렉터리를 git 저장소로 사용하면 됩니다.
+## Render Deploy
+이 앱은 Render에서 `Docker` 웹서비스로 배포하는 구성이 준비되어 있습니다.
 
-현재 포함된 기본 배포 메타:
-- `VERSION`
-- `CHANGELOG.md`
-- `TODOS.md`
-- `.gitignore`
+포함된 배포 파일:
+- `Dockerfile`
+- `render.yaml`
+- `requirements.txt`
+- `CLAUDE.md`
+
+배포 전 로컬 확인:
+```bash
+cd app
+python smoke_test.py
+```
+
+Render 배포 기준:
+- Start: Docker 컨테이너에서 `python server.py`
+- Port: Render가 주는 `PORT` 사용
+- Health check: `/healthz`
+
+주의:
+- PDF 한글 렌더링 때문에 Docker 이미지에서 `fonts-noto-cjk`를 설치합니다.
+- Render에서 첫 배포 후 발급된 URL을 `CLAUDE.md`의 Production URL에 채우면 됩니다.
+
+## Extras
+배포에 필요 없는 로컬 보조 파일들은 [`app_extras`](D:/project/GSTACK/app_extras)로 옮겨 두었습니다.
 
 ## Included
 - 내부직원 / 외부직원 첫 화면 분기
