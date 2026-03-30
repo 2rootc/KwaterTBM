@@ -1,0 +1,33 @@
+{
+  "workerName": "이근창",
+  "workDate": "2026-03-25",
+  "workName": "유량계 교정",
+  "workLocation": "정읍권지사",
+  "checklistResponses": {
+    "risk-1": {
+      "status": "yes"
+    },
+    "risk-2": {
+      "status": "yes"
+    },
+    "risk-3": {
+      "status": "yes"
+    },
+    "safety-1": {
+      "status": "yes"
+    },
+    "safety-2": {
+      "status": "yes"
+    },
+    "safety-3": {
+      "status": "yes"
+    },
+    "safety-4": {
+      "status": "yes"
+    },
+    "tbm-1": {
+      "status": "yes"
+    }
+  },
+  "signatureDataUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJ6kAAAAASUVORK5CYII="
+}

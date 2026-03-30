@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOOLBOX MEETING</title>
+  <link rel="stylesheet" href="./styles.css?v=20260330-deletefix">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="hero-topbar">
+        <div class="hero-copy">
+          <p class="eyebrow">Mobile TBM</p>
+          <h1>TOOLBOX MEETING</h1>
+          <p>현장 작업 전 위험요인, 안전대책, 서명을 한 흐름으로 정리하는 모바일 TBM 작성 도구입니다.</p>
+        </div>
+        <div class="hero-controls">
+          <button id="adminButton" class="ghost-button admin-button" type="button" aria-label="관리자 잠금">🔒 관리자</button>
+          <button id="goToLogsButton" class="ghost-button" type="button">TBM 이력</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="screen-entry" class="screen active card stack-lg">
+        <div>
+          <p class="section-label">1. 직원 구분</p>
+          <h2>어떤 사용자로 시작할까요?</h2>
+        </div>
+        <div class="choice-grid">
+          <button id="internalButton" class="choice-card" type="button">
+            <strong>내부직원</strong>
+            <span>팀 선택 후 TBM 양식을 바로 작성합니다.</span>
+          </button>
+          <button id="externalButton" class="choice-card disabled" type="button" disabled aria-disabled="true">
+            <span class="choice-badge">준비 중</span>
+            <strong>외부직원</strong>
+          </button>
+        </div>
+      </section>
+
+      <section id="screen-team" class="screen card stack-lg">
+        <div class="screen-head">
+          <button class="back-button" data-back="entry" type="button">뒤로</button>
+          <div>
+            <p class="section-label">2. 팀 선택</p>
+            <h2>팀을 선택하세요</h2>
+          </div>
+        </div>
+        <div id="teamList" class="team-grid"></div>
+      </section>
+
+      <section id="screen-form" class="screen card stack-lg">
+        <div class="screen-head">
+          <button class="back-button" data-back="team" type="button">뒤로</button>
+          <div>
+            <p class="section-label">3. TBM 시행</p>
+            <h2 id="formTitle">TBM 시행</h2>
+            <p id="formStepTitle" class="muted">기본 정보를 먼저 입력하세요.</p>
+          </div>
+        </div>
+
+        <form id="tbmForm" class="stack-xl" novalidate>
+          <div id="formErrorSummary" class="form-error-summary hidden" role="alert" aria-live="assertive"></div>
+          <div class="form-progress" aria-label="TBM 작성 단계">
+            <div class="form-progress-track"><span id="formProgressBar" class="form-progress-fill"></span></div>
+            <div id="formProgressSteps" class="form-progress-steps">
+              <span class="form-progress-step is-active">1. 기본정보</span>
+              <span class="form-progress-step">2. 체크리스트</span>
+              <span class="form-progress-step">3. 서명/제출</span>
+            </div>
+          </div>
+          <div class="form-step is-active" data-step="1">
+            <div class="field-grid">
+              <label class="field">
+                <span>이름</span>
+                <input name="workerName" type="text" placeholder="이름 입력" autocomplete="name" required>
+              </label>
+              <label class="field">
+                <span>날짜</span>
+                <input name="workDate" type="date" required>
+              </label>
+              <label class="field">
+                <span>시간</span>
+                <input name="workTime" type="time" required>
+              </label>
+              <label class="field field-full">
+                <span>작업명</span>
+                <input name="workName" type="text" placeholder="예: 유량계 교정" autocomplete="organization-title" required>
+              </label>
+              <label class="field field-full">
+                <span>작업위치</span>
+                <input name="workLocation" type="text" placeholder="예: K-water 연구원" autocomplete="street-address" required>
+              </label>
+            </div>
+          </div>
+          <div class="form-step" data-step="2">
+            <div class="card subtle-card stack-md">
+              <div>
+                <p class="section-label">체크리스트</p>
+                <h3>TBM 확인 항목</h3>
+                <p class="muted">8개 항목을 빠짐없이 선택해 주세요.</p>
+              </div>
+              <div id="checklistContainer" class="checklist-list"></div>
+            </div>
+          </div>
+          <div class="form-step" data-step="3">
+            <div class="card subtle-card stack-md">
+              <div>
+                <p class="section-label">서명</p>
+                <h3>최종 확인 서명</h3>
+                <p class="muted">서명 후 제출됩니다.</p>
+              </div>
+              <canvas id="signaturePad" width="640" height="220" aria-label="서명 입력 영역"></canvas>
+              <div class="inline-actions">
+                <button id="clearSignatureButton" class="ghost-button" type="button">다시 쓰기</button>
+                <span id="signatureStatus" class="status-pill">서명 미입력</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-sticky-actions">
+            <button id="formPrevStepButton" class="ghost-button" type="button">이전</button>
+            <button id="formNextStepButton" class="primary-button" type="button">다음</button>
+            <button id="formSubmitButton" class="primary-button hidden" type="submit">제출</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="screen-detail" class="screen card stack-lg">
+        <div class="screen-head">
+          <button class="back-button" data-back="entry" type="button">처음으로</button>
+          <div>
+            <p class="section-label">4. 저장 결과</p>
+            <h2>TBM 작성완료</h2>
+          </div>
+        </div>
+        <div id="meetingDetail"></div>
+        <div class="inline-actions wrap-actions">
+          <button id="printPdfButton" class="primary-button" type="button">PDF열기</button>
+          <button id="savePdfButton" class="ghost-button" type="button">PDF 저장</button>
+          <button id="deleteMeetingButton" class="ghost-button ghost-danger" type="button">현재 로그 삭제</button>
+        </div>
+      </section>
+
+      <section id="screen-logs" class="screen card stack-lg">
+        <div class="screen-head">
+          <button class="back-button" data-back="entry" type="button">처음으로</button>
+          <div>
+            <p class="section-label">기록</p>
+            <h2>저장된 로그</h2>
+          </div>
+        </div>
+        <div class="inline-actions wrap-actions">
+          <button id="clearAllLogsButton" class="ghost-button ghost-danger" type="button">저장된 로그 전체 삭제</button>
+        </div>
+        <div id="logFilterList" class="filter-row"></div>
+        <div id="logList" class="stack-md"></div>
+      </section>
+    </main>
+    <footer class="app-footer">
+      <div class="footer-brand">
+        <strong>K-water 물에너지연구소</strong>
+        <span>TOOLBOX MEETING TBM Web App</span>
+      </div>
+      <div class="footer-meta" aria-label="저작권 및 앱 정보">
+        <span>© 2026</span>
+        <span>Internal Safety Workflow</span>
+      </div>
+    </footer>
+  </div>
+
+  <template id="printTemplate">
+    <div class="print-sheet">
+      <header class="print-header">
+        <div>
+          <p>TOOLBOX MEETING</p>
+          <h1>TBM 기록서</h1>
+        </div>
+        <p class="print-date"></p>
+      </header>
+      <section class="print-grid"></section>
+      <section>
+        <h2>체크리스트</h2>
+        <div class="print-checklist-table">
+          <div class="print-checklist-head">
+            <span>항목</span>
+            <span>네</span>
+            <span>아니요</span>
+            <span>해당없음</span>
+            <span>조치내용</span>
+          </div>
+          <div class="print-checklist"></div>
+        </div>
+      </section>
+      <section class="signature-block">
+        <div>
+          <p class="signature-label">(서명)</p>
+          <div class="signature-box">
+            <img class="signature-image" alt="서명 이미지">
+          </div>
+        </div>
+      </section>
+    </div>
+  </template>
+
+  <script src="./app.js?v=20260330-deletefix"></script>
+</body>
+</html>
+

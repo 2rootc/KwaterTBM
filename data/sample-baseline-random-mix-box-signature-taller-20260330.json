@@ -1,0 +1,41 @@
+{
+  "workerName": "이창호",
+  "workDate": "2026-03-25",
+  "workName": "유량계교정",
+  "workLocation": "정읍권지사",
+  "signatureDataUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANwAAABkCAYAAADtw16ZAAABRElEQVR4nO3cwQ2AAAgAMTHuvzIuYc5E2wEInws/ZncPoHG+vQD8ieAgJDgICQ5CgoOQ4CAkOAgJDkKCg5DgICQ4CAkOQoKDkOAgJDgICQ5CgoOQ4CAkOAhdTw+cGU9S+IzdnSfnuXAQEhyEBAchwUFIcBASHIQEByHBQUhwEBIchAQHIcFBSHAQEhyEBAchwUFIcBASHIQEByHBQUhwEBIchAQHIcFBSHAQEhyEBAchwUFIcBASHIQEByHBQUhwEBIchAQHIcFBSHAQEhyEBAchwUFIcBASHIQEByHBQUhwEBIchAQHIcFBSHAQEhyEBAchwUFIcBASHIQEByHBQUhwEBIchAQHodndt3eA33DhICQ4CAkOQoKDkOAgJDgICQ5CgoOQ4CAkOAgJDkKCg5DgICQ4CAkOQoKDkOAgJDgICQ5CN8kVCsPg3/3uAAAAAElFTkSuQmCC",
+  "checklistResponses": {
+    "risk-1": {
+      "status": "no",
+      "action": "동해물과 백두산이 마르고 닳도록"
+    },
+    "risk-2": {
+      "status": "no",
+      "action": "동해물과 백두산이 마르고 닳도록"
+    },
+    "risk-3": {
+      "status": "yes",
+      "action": ""
+    },
+    "safety-1": {
+      "status": "na",
+      "action": ""
+    },
+    "safety-2": {
+      "status": "no",
+      "action": "동해물과 백두산이 마르고 닳도록"
+    },
+    "safety-3": {
+      "status": "na",
+      "action": ""
+    },
+    "safety-4": {
+      "status": "yes",
+      "action": ""
+    },
+    "tbm-1": {
+      "status": "na",
+      "action": ""
+    }
+  }
+}
