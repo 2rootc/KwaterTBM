@@ -598,7 +598,8 @@ async function syncMeetingsFromServer() {
       serverSavedAt: meeting.savedAt ?? '',
     })));
 
-    state.meetings = mergeMeetings(state.meetings, serverMeetings);
+    // Server is the source of truth — replace local state entirely
+    state.meetings = serverMeetings;
     persistMeetings();
     renderLogList();
 
@@ -666,18 +667,11 @@ async function deleteMeeting(meetingId) {
   renderLogList();
   showScreen('logs');
 
-  let serverDeleteFailed = false;
-  if (meeting.serverPdfUrl || meeting.serverLogUrl) {
-    try {
-      await deleteMeetingOnServer(meetingId);
-    } catch (error) {
-      console.error(error);
-      serverDeleteFailed = true;
-    }
-  }
-
-  if (serverDeleteFailed) {
-    window.alert('로컬 로그는 삭제했지만 서버 저장 파일 삭제는 실패했습니다. 서버를 다시 시작한 뒤 다시 시도해 주세요.');
+  try {
+    await deleteMeetingOnServer(meetingId);
+  } catch (error) {
+    console.error(error);
+    window.alert('로컬 로그는 삭제했지만 서버 저장 파일 삭제는 실패했습니다. 다시 시도해 주세요.');
   }
 }
 
@@ -699,9 +693,6 @@ async function clearAllMeetings() {
 
   let serverDeleteFailed = false;
   for (const meeting of meetingsToDelete) {
-    if (!meeting.serverPdfUrl && !meeting.serverLogUrl) {
-      continue;
-    }
     try {
       await deleteMeetingOnServer(meeting.id);
     } catch (error) {
@@ -711,7 +702,7 @@ async function clearAllMeetings() {
   }
 
   if (serverDeleteFailed) {
-    window.alert('로컬 로그는 전체 삭제했지만 일부 서버 저장 파일 삭제는 실패했습니다. 서버를 다시 시작한 뒤 다시 시도해 주세요.');
+    window.alert('로컬 로그는 전체 삭제했지만 일부 서버 저장 파일 삭제는 실패했습니다. 다시 시도해 주세요.');
   }
 }
 
