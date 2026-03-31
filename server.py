@@ -7,6 +7,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
+import db
 from fill_pdf import create_pdf
 
 ROOT = Path(__file__).resolve().parent
@@ -28,6 +29,14 @@ CHECKLIST_KEYS = (
 
 for path in (LOG_DIR, PDF_DIR, TMP_DIR):
     path.mkdir(parents=True, exist_ok=True)
+
+# Initialize DB tables on startup (no-op if DATABASE_URL is not set)
+db.init_tables()
+USE_DB = db.is_available()
+if USE_DB:
+    print('Using PostgreSQL for persistent storage')
+else:
+    print('DATABASE_URL not set — using local filesystem (data will not survive restarts on Render)')
 
 
 def validate_meeting_payload(payload: dict) -> list[str]:
@@ -77,6 +86,31 @@ class Handler(SimpleHTTPRequestHandler):
         if parsed.path == '/api/meetings':
             self.handle_list_meetings()
             return
+
+        # Serve PDFs and logs from DB when available
+        if USE_DB and parsed.path.startswith('/storage/pdfs/') and parsed.path.endswith('.pdf'):
+            meeting_id = parsed.path.split('/')[-1].replace('.pdf', '')
+            pdf_data = db.get_pdf(meeting_id)
+            if pdf_data:
+                self.send_response(HTTPStatus.OK)
+                self.send_header('Content-Type', 'application/pdf')
+                self.send_header('Content-Length', str(len(pdf_data)))
+                self.end_headers()
+                self.wfile.write(pdf_data)
+                return
+
+        if USE_DB and parsed.path.startswith('/storage/logs/') and parsed.path.endswith('.json'):
+            meeting_id = parsed.path.split('/')[-1].replace('.json', '')
+            log_data = db.get_log(meeting_id)
+            if log_data:
+                body = json.dumps(log_data, ensure_ascii=False).encode('utf-8')
+                self.send_response(HTTPStatus.OK)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+
         super().do_GET()
 
     def do_POST(self):
@@ -110,10 +144,17 @@ class Handler(SimpleHTTPRequestHandler):
             output_log = LOG_DIR / f'{meeting_id}.json'
 
             create_pdf(payload, output_pdf)
-            output_log.write_text(
-                json.dumps({**payload, 'pdfFile': output_pdf.name}, ensure_ascii=False, indent=2),
-                encoding='utf-8',
-            )
+
+            # Read PDF bytes for DB storage
+            pdf_bytes = output_pdf.read_bytes() if output_pdf.exists() else None
+
+            if USE_DB:
+                db.save_meeting(meeting_id, {**payload, 'pdfFile': output_pdf.name}, pdf_bytes)
+            else:
+                output_log.write_text(
+                    json.dumps({**payload, 'pdfFile': output_pdf.name}, ensure_ascii=False, indent=2),
+                    encoding='utf-8',
+                )
 
             response = {
                 'ok': True,
@@ -160,10 +201,18 @@ class Handler(SimpleHTTPRequestHandler):
 
         try:
             removed = []
+
+            if USE_DB:
+                if db.delete_meeting(meeting_id):
+                    removed.append(f'{meeting_id}.json')
+                    removed.append(f'{meeting_id}.pdf')
+
+            # Also clean up local files if they exist
             for path in (PDF_DIR / f'{meeting_id}.pdf', LOG_DIR / f'{meeting_id}.json'):
                 if path.exists():
                     path.unlink()
-                    removed.append(path.name)
+                    if path.name not in removed:
+                        removed.append(path.name)
 
             body = json.dumps({'ok': True, 'id': meeting_id, 'removed': removed}, ensure_ascii=False).encode('utf-8')
             self.send_response(HTTPStatus.OK)
@@ -211,23 +260,26 @@ class Handler(SimpleHTTPRequestHandler):
 
     def handle_list_meetings(self):
         try:
-            meetings = []
-            for log_path in sorted(LOG_DIR.glob('*.json'), key=lambda item: item.stat().st_mtime, reverse=True):
-                try:
-                    payload = json.loads(log_path.read_text(encoding='utf-8'))
-                except json.JSONDecodeError:
-                    continue
+            if USE_DB:
+                meetings = db.list_meetings()
+            else:
+                meetings = []
+                for log_path in sorted(LOG_DIR.glob('*.json'), key=lambda item: item.stat().st_mtime, reverse=True):
+                    try:
+                        payload = json.loads(log_path.read_text(encoding='utf-8'))
+                    except json.JSONDecodeError:
+                        continue
 
-                meeting_id = payload.get('id') or log_path.stem
-                pdf_file = payload.get('pdfFile') or f'{meeting_id}.pdf'
-                meetings.append({
-                    **payload,
-                    'id': meeting_id,
-                    'pdfFile': pdf_file,
-                    'pdfUrl': f'/storage/pdfs/{pdf_file}',
-                    'logUrl': f'/storage/logs/{log_path.name}',
-                    'savedAt': __import__('datetime').datetime.fromtimestamp(log_path.stat().st_mtime).isoformat(),
-                })
+                    meeting_id = payload.get('id') or log_path.stem
+                    pdf_file = payload.get('pdfFile') or f'{meeting_id}.pdf'
+                    meetings.append({
+                        **payload,
+                        'id': meeting_id,
+                        'pdfFile': pdf_file,
+                        'pdfUrl': f'/storage/pdfs/{pdf_file}',
+                        'logUrl': f'/storage/logs/{log_path.name}',
+                        'savedAt': __import__('datetime').datetime.fromtimestamp(log_path.stat().st_mtime).isoformat(),
+                    })
 
             body = json.dumps({'ok': True, 'meetings': meetings}, ensure_ascii=False).encode('utf-8')
             self.send_response(HTTPStatus.OK)
