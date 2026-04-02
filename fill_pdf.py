@@ -19,6 +19,8 @@ FONT_CANDIDATES = [
     Path('/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'),
     Path('/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc'),
     Path('/usr/share/fonts/truetype/nanum/NanumGothic.ttf'),
+    Path('/System/Library/Fonts/AppleSDGothicNeo.ttc'),
+    Path('/System/Library/Fonts/Supplemental/AppleGothic.ttf'),
 ]
 BOLD_FONT_CANDIDATES = [
     Path(r'C:\Windows\Fonts\malgunbd.ttf'),

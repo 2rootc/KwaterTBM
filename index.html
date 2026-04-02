@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TOOLBOX MEETING</title>
-  <link rel="stylesheet" href="./styles.css?v=20260330-deletefix">
+  <link rel="stylesheet" href="./styles.css?v=20260401-sig2step">
 </head>
 <body>
   <div class="app-shell">
@@ -68,7 +68,6 @@
             <div id="formProgressSteps" class="form-progress-steps">
               <span class="form-progress-step is-active">1. 기본정보</span>
               <span class="form-progress-step">2. 체크리스트</span>
-              <span class="form-progress-step">3. 서명/제출</span>
             </div>
           </div>
           <div class="form-step is-active" data-step="1">
@@ -105,24 +104,9 @@
               <div id="checklistContainer" class="checklist-list"></div>
             </div>
           </div>
-          <div class="form-step" data-step="3">
-            <div class="card subtle-card stack-md">
-              <div>
-                <p class="section-label">서명</p>
-                <h3>최종 확인 서명</h3>
-                <p class="muted">서명 후 제출됩니다.</p>
-              </div>
-              <canvas id="signaturePad" width="640" height="220" aria-label="서명 입력 영역"></canvas>
-              <div class="inline-actions">
-                <button id="clearSignatureButton" class="ghost-button" type="button">다시 쓰기</button>
-                <span id="signatureStatus" class="status-pill">서명 미입력</span>
-              </div>
-            </div>
-          </div>
           <div class="form-sticky-actions">
             <button id="formPrevStepButton" class="ghost-button" type="button">이전</button>
             <button id="formNextStepButton" class="primary-button" type="button">다음</button>
-            <button id="formSubmitButton" class="primary-button hidden" type="submit">제출</button>
           </div>
         </form>
       </section>
@@ -158,6 +142,21 @@
         <div id="logList" class="stack-md"></div>
       </section>
     </main>
+
+    <div id="signatureModal" class="sig-modal hidden" aria-modal="true" role="dialog">
+      <div class="sig-modal-header">
+        <h3>서명</h3>
+        <button id="sigModalClose" class="ghost-button" type="button">취소</button>
+      </div>
+      <div class="sig-modal-body">
+        <canvas id="signaturePad" aria-label="서명 입력 영역"></canvas>
+      </div>
+      <div class="sig-modal-footer">
+        <button id="clearSignatureButton" class="ghost-button" type="button">다시 쓰기</button>
+        <button id="sigModalConfirm" class="primary-button" type="button">서명 및 제출</button>
+      </div>
+    </div>
+
     <footer class="app-footer">
       <div class="footer-brand">
         <strong>K-water 물에너지연구소</strong>
@@ -204,7 +203,7 @@
     </div>
   </template>
 
-  <script src="./app.js?v=20260330-deletefix"></script>
+  <script src="./app.js?v=20260401-sig2step"></script>
 </body>
 </html>
 

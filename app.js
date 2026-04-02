@@ -50,12 +50,13 @@ const elements = {
   formSteps: [...document.querySelectorAll('.form-step')],
   formPrevStepButton: document.getElementById('formPrevStepButton'),
   formNextStepButton: document.getElementById('formNextStepButton'),
-  formSubmitButton: document.getElementById('formSubmitButton'),
   formTitle: document.getElementById('formTitle'),
   checklistContainer: document.getElementById('checklistContainer'),
   clearSignatureButton: document.getElementById('clearSignatureButton'),
-  signatureStatus: document.getElementById('signatureStatus'),
   signaturePad: document.getElementById('signaturePad'),
+  signatureModal: document.getElementById('signatureModal'),
+  sigModalClose: document.getElementById('sigModalClose'),
+  sigModalConfirm: document.getElementById('sigModalConfirm'),
   meetingDetail: document.getElementById('meetingDetail'),
   printPdfButton: document.getElementById('printPdfButton'),
   savePdfButton: document.getElementById('savePdfButton'),
@@ -106,12 +107,29 @@ function wireEvents() {
   });
   elements.formNextStepButton.addEventListener('click', () => {
     if (!validateCurrentStep()) return;
+    if (state.currentFormStep === 2) {
+      openSignatureModal();
+      return;
+    }
     goToFormStep(state.currentFormStep + 1);
   });
 
   elements.clearSignatureButton.addEventListener('click', () => {
     signature.clear();
-    updateSignatureStatus();
+  });
+
+  elements.sigModalClose.addEventListener('click', () => {
+    closeSignatureModal();
+  });
+
+  elements.sigModalConfirm.addEventListener('click', async () => {
+    if (signature.isEmpty()) {
+      window.alert('서명을 입력해 주세요.');
+      return;
+    }
+    elements.signatureModal.classList.add('hidden');
+    document.body.style.overflow = '';
+    await submitMeeting();
   });
 
   elements.printPdfButton.addEventListener('click', () => {
@@ -265,7 +283,6 @@ function resetFormForNewMeeting(team) {
   renderChecklist();
   seedDefaultDate();
   signature.clear();
-  updateSignatureStatus();
   state.activeMeetingId = null;
   goToFormStep(1);
   elements.form.workerName.focus();
@@ -274,15 +291,6 @@ function resetFormForNewMeeting(team) {
   }
 }
 
-function updateSignatureStatus() {
-  if (signature.isEmpty()) {
-    elements.signatureStatus.textContent = '서명 미입력';
-    elements.signatureStatus.classList.remove('ready');
-  } else {
-    elements.signatureStatus.textContent = '서명 완료';
-    elements.signatureStatus.classList.add('ready');
-  }
-}
 
 function collectChecklistResponses() {
   const responses = {};
@@ -357,11 +365,6 @@ function validateMeeting(meeting) {
     issues.push({ element: textarea, message: '조치내용이 비어 있는 항목이 있습니다.', step: 2 });
   }
 
-  if (!meeting.signatureDataUrl) {
-    markSignatureError('최종 제출 전 서명이 필요합니다.');
-    issues.push({ element: elements.signaturePad, message: '서명이 누락되었습니다.', step: 3 });
-  }
-
   if (issues.length > 0) {
     if (issues[0].step) {
       goToFormStep(issues[0].step);
@@ -419,11 +422,6 @@ function validateCurrentStep() {
     }
   }
 
-  if (state.currentFormStep === 3 && !meeting.signatureDataUrl) {
-    markSignatureError('최종 제출 전 서명이 필요합니다.');
-    issues.push({ element: elements.signaturePad, message: '서명이 누락되었습니다.', step: 3 });
-  }
-
   if (issues.length > 0) {
     renderValidationSummary(issues);
     focusFirstError(issues[0].element);
@@ -476,7 +474,7 @@ async function submitMeeting() {
 }
 
 function goToFormStep(step) {
-  const nextStep = Math.max(1, Math.min(3, step));
+  const nextStep = Math.max(1, Math.min(2, step));
   state.currentFormStep = nextStep;
 
   elements.formSteps.forEach((section) => {
@@ -488,17 +486,14 @@ function goToFormStep(step) {
     stepElement.classList.toggle('is-complete', stepNumber < nextStep);
   });
 
-  elements.formProgressBar.style.width = `${((nextStep - 1) / 2) * 100}%`;
+  elements.formProgressBar.style.width = `${((nextStep - 1) / 1) * 100}%`;
   elements.formPrevStepButton.disabled = nextStep === 1;
-  elements.formNextStepButton.classList.toggle('hidden', nextStep === 3);
-  elements.formSubmitButton.classList.toggle('hidden', nextStep !== 3);
+  elements.formNextStepButton.textContent = nextStep === 2 ? '서명 및 제출' : '다음';
 
   if (nextStep === 1) {
     elements.formStepTitle.textContent = '기본 정보를 먼저 입력하세요.';
-  } else if (nextStep === 2) {
-    elements.formStepTitle.textContent = '체크리스트 8개 항목을 빠짐없이 선택하세요.';
   } else {
-    elements.formStepTitle.textContent = '서명 후 제출하면 기록과 PDF가 저장됩니다.';
+    elements.formStepTitle.textContent = '체크리스트 8개 항목을 빠짐없이 선택하세요.';
   }
 }
 
@@ -508,8 +503,6 @@ function clearValidationErrors() {
 
   elements.form.querySelectorAll('.has-error').forEach((node) => node.classList.remove('has-error'));
   elements.form.querySelectorAll('.field-error-text').forEach((node) => node.remove());
-  elements.signatureStatus.classList.remove('signature-block-error');
-  elements.signaturePad.classList.remove('has-error');
 }
 
 function markFieldError(target, message) {
@@ -543,17 +536,6 @@ function markChecklistError(itemKeys, message) {
   }
 }
 
-function markSignatureError(message) {
-  elements.signaturePad.classList.add('has-error');
-  elements.signatureStatus.classList.add('signature-block-error');
-  const signatureCard = elements.signaturePad.closest('.card');
-  if (signatureCard) {
-    const messageNode = document.createElement('p');
-    messageNode.className = 'field-error-text';
-    messageNode.textContent = message;
-    signatureCard.appendChild(messageNode);
-  }
-}
 
 function renderValidationSummary(issues) {
   const uniqueMessages = [...new Set(issues.map((issue) => issue.message))];
@@ -713,7 +695,7 @@ function renderMeetingDetail(meeting, warning = '') {
 
   elements.printPdfButton.textContent = meeting.serverPdfUrl ? 'PDF열기' : 'PDF 미리보기';
   elements.savePdfButton.disabled = !meeting.serverPdfUrl;
-  elements.deleteMeetingButton.disabled = !state.isAdmin;
+  elements.deleteMeetingButton.style.display = state.isAdmin ? '' : 'none';
 }
 
 function renderChecklistSummary(responses) {
@@ -751,7 +733,7 @@ function renderLogList() {
       <div class="log-actions">
         <button class="ghost-button" type="button" data-view="${meeting.id}">상세 보기</button>
         <button class="ghost-button" type="button" data-print="${meeting.id}">${meeting.serverPdfUrl ? 'PDF 열기' : 'PDF로 저장'}</button>
-        <button class="ghost-button ghost-danger" type="button" data-delete="${meeting.id}" ${state.isAdmin ? '' : 'disabled'}>삭제</button>
+        <button class="ghost-button ghost-danger" type="button" data-delete="${meeting.id}" style="${state.isAdmin ? '' : 'display:none'}">삭제</button>
       </div>
     `;
     card.querySelector('[data-view]').addEventListener('click', () => {
@@ -842,9 +824,31 @@ function downloadJson(meeting) {
   URL.revokeObjectURL(url);
 }
 
+function buildPdfFileName(meeting) {
+  const teamShortName = {
+    'flow-meter': '(유량계)',
+    'water-meter': '(수우량계)',
+    'calibration': '(정도검사)',
+    'other': '(기타)',
+  };
+  const prefix = teamShortName[meeting.teamCode] || '';
+  const workLocation = meeting.workLocation || 'TBM';
+  const date = meeting.workDate || '';
+  return `${prefix}${workLocation}_${date}.pdf`;
+}
+
 async function savePdf(meeting) {
   if (!meeting.serverPdfUrl) {
     window.alert('서버에서 생성된 PDF가 있을 때만 바로 저장할 수 있습니다.');
+    return;
+  }
+
+  const suggestedName = buildPdfFileName(meeting);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    // 모바일: 새 탭에서 PDF를 열어서 브라우저 기본 저장/공유 기능 사용
+    window.open(meeting.serverPdfUrl, '_blank', 'noopener,noreferrer');
     return;
   }
 
@@ -856,7 +860,6 @@ async function savePdf(meeting) {
     }
 
     const blob = await response.blob();
-    const suggestedName = `TBM-${meeting.workDate}-${meeting.workerName || meeting.teamCode || 'meeting'}.pdf`;
 
     if ('showSaveFilePicker' in window) {
       try {
@@ -1022,8 +1025,9 @@ function toggleAdminMode() {
 function updateAdminUi() {
   elements.adminButton.textContent = state.isAdmin ? '🔓 관리자' : '🔒 관리자';
   elements.adminButton.setAttribute('aria-label', state.isAdmin ? '관리자 활성화' : '관리자 잠금');
-  elements.deleteMeetingButton.disabled = !state.isAdmin;
-  elements.clearAllLogsButton.disabled = !state.isAdmin;
+  elements.adminButton.classList.toggle('admin-active', state.isAdmin);
+  elements.deleteMeetingButton.style.display = state.isAdmin ? '' : 'none';
+  elements.clearAllLogsButton.style.display = state.isAdmin ? '' : 'none';
 }
 
 function requireAdminAccess() {
@@ -1047,12 +1051,16 @@ function escapeHtml(value) {
 
 function setupSignaturePad(canvas) {
   const context = canvas.getContext('2d');
-  context.lineCap = 'round';
-  context.lineJoin = 'round';
-  context.lineWidth = 5;
-  context.strokeStyle = '#111111';
   let drawing = false;
   let hasStroke = false;
+
+  function initContext() {
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+    context.lineWidth = 5;
+    context.strokeStyle = '#111111';
+  }
+  initContext();
 
   const getPoint = (event) => {
     const rect = canvas.getBoundingClientRect();
@@ -1078,7 +1086,6 @@ function setupSignaturePad(canvas) {
     context.lineTo(point.x, point.y);
     context.stroke();
     hasStroke = true;
-    updateSignatureStatus();
   };
 
   const end = () => {
@@ -1086,8 +1093,8 @@ function setupSignaturePad(canvas) {
     context.closePath();
   };
 
-  canvas.addEventListener('pointerdown', start);
-  canvas.addEventListener('pointermove', move);
+  canvas.addEventListener('pointerdown', start, { passive: false });
+  canvas.addEventListener('pointermove', move, { passive: false });
   window.addEventListener('pointerup', end);
   canvas.addEventListener('touchstart', start, { passive: false });
   canvas.addEventListener('touchmove', move, { passive: false });
@@ -1104,5 +1111,47 @@ function setupSignaturePad(canvas) {
     toDataURL() {
       return canvas.toDataURL('image/png');
     },
+    resize() {
+      const body = canvas.closest('.sig-modal-body');
+      if (!body) return;
+      const saved = hasStroke ? canvas.toDataURL() : null;
+      canvas.width = body.clientWidth - 16;
+      canvas.height = body.clientHeight - 16;
+      initContext();
+      if (saved) {
+        const img = new Image();
+        img.onload = () => {
+          context.drawImage(img, 0, 0, canvas.width, canvas.height);
+          hasStroke = true;
+        };
+        img.src = saved;
+      }
+    },
   };
+}
+
+let _savedSignatureDataUrl = '';
+
+function openSignatureModal() {
+  _savedSignatureDataUrl = signature.isEmpty() ? '' : signature.toDataURL();
+  elements.signatureModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  signature.resize();
+}
+
+function closeSignatureModal() {
+  elements.signatureModal.classList.add('hidden');
+  document.body.style.overflow = '';
+  // Restore previous signature on cancel
+  if (_savedSignatureDataUrl) {
+    signature.clear();
+    const img = new Image();
+    img.onload = () => {
+      const canvas = elements.signaturePad;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = _savedSignatureDataUrl;
+  } else {
+    signature.clear();
+  }
 }
