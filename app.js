@@ -689,10 +689,32 @@ async function clearAllMeetings() {
 }
 
 function renderMeetingDetail(meeting, warning = '') {
-  elements.meetingDetail.innerHTML = warning
+  const warningHtml = warning
     ? `<div class="card subtle-card"><p style="color: var(--danger); margin: 0;">${escapeHtml(warning)}</p></div>`
     : '';
 
+  const infoHtml = `
+    <div class="card subtle-card stack-md">
+      <div>
+        <p class="section-label">기본 정보</p>
+        <div class="field-grid">
+          <div class="field"><span>이름</span><p>${escapeHtml(meeting.workerName || '-')}</p></div>
+          <div class="field"><span>날짜</span><p>${escapeHtml(meeting.workDate || '-')}</p></div>
+          <div class="field"><span>시간</span><p>${escapeHtml(meeting.workTime || '-')}</p></div>
+          <div class="field field-full"><span>작업명</span><p>${escapeHtml(meeting.workName || '-')}</p></div>
+          <div class="field field-full"><span>작업위치</span><p>${escapeHtml(meeting.workLocation || '-')}</p></div>
+          <div class="field"><span>팀</span><p>${escapeHtml(meeting.teamName || '-')}</p></div>
+        </div>
+      </div>
+      <div>
+        <p class="section-label">체크리스트</p>
+        ${meeting.checklistResponses ? renderChecklistSummary(meeting.checklistResponses) : '<p class="muted">체크리스트 데이터 없음</p>'}
+      </div>
+      ${meeting.signatureDataUrl ? `<div><p class="section-label">서명</p><img src="${meeting.signatureDataUrl}" alt="서명" style="max-width:200px; border:1px solid var(--border);border-radius:8px;padding:8px;"></div>` : ''}
+    </div>
+  `;
+
+  elements.meetingDetail.innerHTML = warningHtml + infoHtml;
   elements.printPdfButton.textContent = meeting.serverPdfUrl ? 'PDF열기' : 'PDF 미리보기';
   elements.savePdfButton.disabled = !meeting.serverPdfUrl;
   elements.deleteMeetingButton.style.display = state.isAdmin ? '' : 'none';
