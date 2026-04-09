@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TOOLBOX MEETING</title>
-  <link rel="stylesheet" href="./styles.css?v=20260403-detailfix">
+  <link rel="stylesheet" href="./styles.css?v=20260403-3buttons">
 </head>
 <body>
   <div class="app-shell">
@@ -25,17 +25,23 @@
     <main>
       <section id="screen-entry" class="screen active card stack-lg">
         <div>
-          <p class="section-label">1. 직원 구분</p>
-          <h2>어떤 사용자로 시작할까요?</h2>
+          <p class="section-label">1. 작업 선택</p>
+          <h2>어떤 작업을 시작할까요?</h2>
         </div>
         <div class="choice-grid">
-          <button id="internalButton" class="choice-card" type="button">
-            <strong>내부직원</strong>
-            <span>팀 선택 후 TBM 양식을 바로 작성합니다.</span>
+          <button id="tbmButton" class="choice-card" type="button">
+            <strong>TBM</strong>
+            <span>Tool Box Meeting — 팀 선택 후 TBM 양식을 작성합니다.</span>
           </button>
-          <button id="externalButton" class="choice-card disabled" type="button" disabled aria-disabled="true">
+          <button id="permitButton" class="choice-card disabled" type="button" disabled aria-disabled="true">
             <span class="choice-badge">준비 중</span>
-            <strong>외부직원</strong>
+            <strong>작업허가서</strong>
+            <span>작업 전 허가 절차 양식 (준비 중)</span>
+          </button>
+          <button id="preCheckButton" class="choice-card disabled" type="button" disabled aria-disabled="true">
+            <span class="choice-badge">준비 중</span>
+            <strong>사전작업체크리스트</strong>
+            <span>작업 전 사전점검 체크리스트 (준비 중)</span>
           </button>
         </div>
       </section>
@@ -203,7 +209,7 @@
     </div>
   </template>
 
-  <script src="./app.js?v=20260403-detailfix"></script>
+  <script src="./app.js?v=20260403-3buttons"></script>
 </body>
 </html>
 

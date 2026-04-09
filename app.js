@@ -37,8 +37,9 @@ const state = {
 };
 
 const elements = {
-  internalButton: document.getElementById('internalButton'),
-  externalButton: document.getElementById('externalButton'),
+  tbmButton: document.getElementById('tbmButton'),
+  permitButton: document.getElementById('permitButton'),
+  preCheckButton: document.getElementById('preCheckButton'),
   goToLogsButton: document.getElementById('goToLogsButton'),
   adminButton: document.getElementById('adminButton'),
   teamList: document.getElementById('teamList'),
@@ -80,8 +81,9 @@ persistMeetings();
 syncMeetingsFromServer();
 
 function wireEvents() {
-  elements.internalButton.addEventListener('click', () => {
+  elements.tbmButton.addEventListener('click', () => {
     state.employeeType = 'internal';
+    state.workType = 'tbm';
     showScreen('team');
   });
 
