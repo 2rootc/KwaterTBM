@@ -67,6 +67,22 @@ a { color: inherit; text-decoration: none; }
 }
 .hero h1, h2, h3 { margin: 0; }
 .hero h1 { font-size: clamp(34px, 6vw, 56px); letter-spacing: -0.04em; }
+.hero-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+.hero-title-line {
+  display: block;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.hero-title-line-primary {
+  white-space: nowrap;
+  font-size: clamp(28px, 5vw, 56px);
+  line-height: 1.05;
+}
 .hero-copy { max-width: 680px; }
 .hero-copy p:last-child {
   margin: 14px 0 0;
@@ -475,41 +491,112 @@ a { color: inherit; text-decoration: none; }
 .log-card .muted {
   margin: 6px 0 0;
 }
+.log-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+.log-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.log-row-info strong {
+  font-size: 15px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.log-row-info .muted {
+  font-size: 13px;
+}
+.log-row-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.log-row-actions .ghost-button {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.log-row-check {
+  display: flex;
+  align-items: center;
+  padding-right: 4px;
+}
+.log-row-check input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+}
+.log-row-selectable {
+  background: #f7fafc;
+}
+.log-select-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-top: 10px;
+  background: #eef4f8;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.log-select-bar.hidden {
+  display: none;
+}
+.log-select-all {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.log-select-all input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+}
+.log-select-actions {
+  display: flex;
+  gap: 6px;
+}
+.log-select-actions .primary-button,
+.log-select-actions .ghost-button {
+  padding: 6px 12px;
+  font-size: 13px;
+}
 .app-footer {
   margin-top: 24px;
   padding: 18px 22px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  gap: 16px;
   border: 1px solid rgba(138, 173, 193, 0.9);
   border-radius: 22px;
   background: linear-gradient(180deg, rgba(245, 250, 253, 0.95), rgba(232, 242, 248, 0.95));
   color: var(--muted);
   font-size: 13px;
 }
-.footer-brand {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.footer-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
-.footer-brand strong {
+.footer-inline strong {
   color: var(--ink);
   font-size: 15px;
   letter-spacing: -0.01em;
 }
-.footer-brand span {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-.footer-meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-.footer-meta span {
+.footer-inline span {
   display: inline-flex;
   align-items: center;
   min-height: 30px;
@@ -622,6 +709,9 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 720px) {
   .app-shell { width: min(100vw - 16px, 960px); padding-top: 16px; }
   .hero, .card { padding: 18px; border-radius: 20px; }
+  .hero-title-line-primary {
+    font-size: clamp(24px, 7vw, 34px);
+  }
   .form-progress-steps {
     grid-template-columns: 1fr;
   }
@@ -651,11 +741,15 @@ a { color: inherit; text-decoration: none; }
     width: 100%;
   }
   .app-footer {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 16px 18px;
   }
-  .footer-meta {
-    justify-content: flex-start;
+}
+@media (max-width: 390px) {
+  .hero-title-line-primary {
+    letter-spacing: -0.05em;
+  }
+  .hero-title-line:last-child {
+    font-size: 0.9em;
   }
 }
 @media print {
@@ -757,4 +851,3 @@ a { color: inherit; text-decoration: none; }
   color: #24475b;
   font-weight: 700;
 }
-

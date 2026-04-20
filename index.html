@@ -3,17 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TOOLBOX MEETING</title>
-  <link rel="stylesheet" href="./styles.css?v=20260403-3buttons">
+  <title>K-water 물에너지연구소 안전관리시스템</title>
+  <link rel="stylesheet" href="./styles.css?v=20260414-selectdel">
 </head>
 <body>
   <div class="app-shell">
     <header class="hero">
       <div class="hero-topbar">
         <div class="hero-copy">
-          <p class="eyebrow">Mobile TBM</p>
-          <h1>TOOLBOX MEETING</h1>
-          <p>현장 작업 전 위험요인, 안전대책, 서명을 한 흐름으로 정리하는 모바일 TBM 작성 도구입니다.</p>
+          <p class="eyebrow">Mobile Safety System</p>
+          <h1 class="hero-title">
+            <span class="hero-title-line hero-title-line-primary">K-water 물에너지연구소</span>
+            <span class="hero-title-line">안전관리시스템</span>
+          </h1>
+          <p>현장 작업 전 안전 절차를 일관된 기준으로 수행하고, 작업 기록과 점검 이력을 통합 관리하는 안전관리 시스템입니다.</p>
         </div>
         <div class="hero-controls">
           <button id="adminButton" class="ghost-button admin-button" type="button" aria-label="관리자 잠금">🔒 관리자</button>
@@ -25,32 +28,51 @@
     <main>
       <section id="screen-entry" class="screen active card stack-lg">
         <div>
-          <p class="section-label">1. 작업 선택</p>
-          <h2>어떤 작업을 시작할까요?</h2>
+          <p class="section-label">1. 안전업무 선택</p>
         </div>
         <div class="choice-grid">
           <button id="tbmButton" class="choice-card" type="button">
-            <strong>TBM</strong>
-            <span>Tool Box Meeting — 팀 선택 후 TBM 양식을 작성합니다.</span>
-          </button>
-          <button id="permitButton" class="choice-card disabled" type="button" disabled aria-disabled="true">
-            <span class="choice-badge">준비 중</span>
-            <strong>작업허가서</strong>
-            <span>작업 전 허가 절차 양식 (준비 중)</span>
+            <strong>모바일 TBM</strong>
+            <span>현장 작업 전 위험요인, 안전대책, 서명 내용을 작성하고 기록합니다.</span>
           </button>
           <button id="preCheckButton" class="choice-card disabled" type="button" disabled aria-disabled="true">
             <span class="choice-badge">준비 중</span>
             <strong>사전작업체크리스트</strong>
-            <span>작업 전 사전점검 체크리스트 (준비 중)</span>
+            <span>작업 시작 전 점검 항목을 확인하는 기능 (준비 중)</span>
+          </button>
+          <button id="permitButton" class="choice-card disabled" type="button" disabled aria-disabled="true">
+            <span class="choice-badge">준비 중</span>
+            <strong>작업허가서</strong>
+            <span>작업 전 승인 및 허가 절차를 관리하는 기능 (준비 중)</span>
+          </button>
+        </div>
+      </section>
+
+      <section id="screen-employee-type" class="screen card stack-lg">
+        <div class="screen-head">
+          <button class="back-button" data-back="entry" type="button">뒤로</button>
+          <div>
+            <p class="section-label">2. 작업자 구분</p>
+            <h2>작업자를 선택하세요</h2>
+          </div>
+        </div>
+        <div class="choice-grid">
+          <button id="employeeInternalButton" class="choice-card" type="button">
+            <strong>내부직원</strong>
+            <span>K-water 물에너지연구소 소속 직원</span>
+          </button>
+          <button id="employeeExternalButton" class="choice-card" type="button">
+            <strong>외부인력</strong>
+            <span>협력업체 및 외부 작업자</span>
           </button>
         </div>
       </section>
 
       <section id="screen-team" class="screen card stack-lg">
         <div class="screen-head">
-          <button class="back-button" data-back="entry" type="button">뒤로</button>
+          <button class="back-button" data-back="employeeType" type="button">뒤로</button>
           <div>
-            <p class="section-label">2. 팀 선택</p>
+            <p class="section-label">3. 팀 선택</p>
             <h2>팀을 선택하세요</h2>
           </div>
         </div>
@@ -59,7 +81,7 @@
 
       <section id="screen-form" class="screen card stack-lg">
         <div class="screen-head">
-          <button class="back-button" data-back="team" type="button">뒤로</button>
+          <button id="formBackButton" class="back-button" data-back="team" type="button">뒤로</button>
           <div>
             <p class="section-label">3. TBM 시행</p>
             <h2 id="formTitle">TBM 시행</h2>
@@ -117,22 +139,6 @@
         </form>
       </section>
 
-      <section id="screen-detail" class="screen card stack-lg">
-        <div class="screen-head">
-          <button class="back-button" data-back="entry" type="button">처음으로</button>
-          <div>
-            <p class="section-label">4. 저장 결과</p>
-            <h2>TBM 작성완료</h2>
-          </div>
-        </div>
-        <div id="meetingDetail"></div>
-        <div class="inline-actions wrap-actions">
-          <button id="printPdfButton" class="primary-button" type="button">PDF열기</button>
-          <button id="savePdfButton" class="ghost-button" type="button">PDF 저장</button>
-          <button id="deleteMeetingButton" class="ghost-button ghost-danger" type="button">현재 로그 삭제</button>
-        </div>
-      </section>
-
       <section id="screen-logs" class="screen card stack-lg">
         <div class="screen-head">
           <button class="back-button" data-back="entry" type="button">처음으로</button>
@@ -142,7 +148,17 @@
           </div>
         </div>
         <div class="inline-actions wrap-actions">
-          <button id="clearAllLogsButton" class="ghost-button ghost-danger" type="button">저장된 로그 전체 삭제</button>
+          <button id="clearAllLogsButton" class="ghost-button ghost-danger" type="button">삭제하기</button>
+          <div id="logSelectBar" class="log-select-bar hidden">
+            <label class="log-select-all">
+              <input type="checkbox" id="logSelectAllCheckbox">
+              <span>전체 선택</span>
+            </label>
+            <div class="log-select-actions">
+              <button id="logSelectDeleteButton" class="primary-button ghost-danger" type="button">선택 삭제</button>
+              <button id="logSelectCancelButton" class="ghost-button" type="button">취소</button>
+            </div>
+          </div>
         </div>
         <div id="logFilterList" class="filter-row"></div>
         <div id="logList" class="stack-md"></div>
@@ -164,13 +180,9 @@
     </div>
 
     <footer class="app-footer">
-      <div class="footer-brand">
-        <strong>K-water 물에너지연구소</strong>
-        <span>TOOLBOX MEETING TBM Web App</span>
-      </div>
-      <div class="footer-meta" aria-label="저작권 및 앱 정보">
+      <div class="footer-inline" aria-label="저작권 및 앱 정보">
         <span>© 2026</span>
-        <span>Internal Safety Workflow</span>
+        <strong>K-water 물에너지연구소</strong>
       </div>
     </footer>
   </div>
@@ -209,7 +221,6 @@
     </div>
   </template>
 
-  <script src="./app.js?v=20260403-3buttons"></script>
+  <script type="module" src="./app.js?v=20260414-selectdel"></script>
 </body>
 </html>
-
