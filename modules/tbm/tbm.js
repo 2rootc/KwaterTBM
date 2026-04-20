@@ -520,15 +520,11 @@ export function initTbm(app) {
           <span class="muted">${escapeHtml(meeting.workDate)} · ${escapeHtml(meeting.workerName || '-')}</span>
         </div>
         <div class="log-row-actions">
-          <button class="ghost-button" type="button" data-print="${meeting.id}">PDF 열기</button>
+          <button class="ghost-button" type="button" data-print="${meeting.id}">PDF 저장</button>
         </div>
       `;
-      row.querySelector('[data-print]').addEventListener('click', () => {
-        if (meeting.serverPdfUrl) {
-          window.open(meeting.serverPdfUrl, '_blank', 'noopener,noreferrer');
-        } else {
-          openPrintWindow(meeting);
-        }
+      row.querySelector('[data-print]').addEventListener('click', async () => {
+        await downloadPdf(meeting);
       });
       row.querySelector('[data-select]')?.addEventListener('change', (event) => {
         if (event.target.checked) {
@@ -604,6 +600,46 @@ export function initTbm(app) {
     }
     if (serverDeleteFailed) {
       window.alert('로컬 로그는 삭제했지만 일부 서버 저장 파일 삭제는 실패했습니다. 다시 시도해 주세요.');
+    }
+  }
+
+  function buildPdfFileName(meeting) {
+    const teamShortName = {
+      'flow-meter': '(유량계)',
+      'water-meter': '(수우량계)',
+      'calibration': '(정도검사)',
+      'other': '(기타)',
+    };
+    const prefix = teamShortName[meeting.teamCode] || (meeting.employeeType === 'external' ? '(외부인력)' : '');
+    const location = meeting.workLocation || 'TBM';
+    const date = meeting.workDate || '';
+    const name = meeting.workerName || '';
+    return `${prefix}${location}_${date}_${name}.pdf`;
+  }
+
+  async function downloadPdf(meeting) {
+    if (!meeting.serverPdfUrl) {
+      openPrintWindow(meeting);
+      return;
+    }
+
+    const fileName = buildPdfFileName(meeting);
+    try {
+      const response = await fetch(meeting.serverPdfUrl);
+      if (!response.ok) {
+        window.alert('PDF 파일을 불러오지 못했습니다.');
+        return;
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+      window.alert('PDF 저장 중 오류가 발생했습니다.');
     }
   }
 
@@ -735,9 +771,20 @@ export function initTbm(app) {
       window.alert('서명을 입력해 주세요.');
       return;
     }
-    elements.signatureModal.classList.add('hidden');
-    document.body.style.overflow = '';
-    await submitMeeting();
+    elements.sigModalConfirm.disabled = true;
+    elements.sigModalConfirm.textContent = '제출 중...';
+    elements.sigModalClose.disabled = true;
+    elements.clearSignatureButton.disabled = true;
+    try {
+      await submitMeeting();
+    } finally {
+      elements.sigModalConfirm.disabled = false;
+      elements.sigModalConfirm.textContent = '서명 및 제출';
+      elements.sigModalClose.disabled = false;
+      elements.clearSignatureButton.disabled = false;
+      elements.signatureModal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
   });
 
   elements.clearAllLogsButton.addEventListener('click', () => {
